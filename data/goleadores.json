@@ -1,0 +1,56 @@
+{
+ "jugadores": [
+  {
+   "nombre": "Onio",
+   "goles": 1
+  },
+  {
+   "nombre": "Martin",
+   "goles": 1
+  },
+  {
+   "nombre": "Juan",
+   "goles": 3
+  },
+  {
+   "nombre": "Santi",
+   "goles": 0
+  },
+  {
+   "nombre": "Gerva",
+   "goles": 4
+  },
+  {
+   "nombre": "Tarik",
+   "goles": 1
+  },
+  {
+   "nombre": "Josemi",
+   "goles": 0
+  },
+  {
+   "nombre": "Chemi",
+   "goles": 0
+  },
+  {
+   "nombre": "Cristian",
+   "goles": 0
+  },
+  {
+   "nombre": "Ivan",
+   "goles": 0
+  },
+  {
+   "nombre": "Raul",
+   "goles": 0
+  },
+  {
+   "nombre": "Marcos",
+   "goles": 0
+  },
+  {
+   "nombre": "Carlos",
+   "goles": 0
+  }
+ ]
+}
