@@ -320,8 +320,11 @@ function initials(name){
   const ws=w.length?w:name.split(/\s+/);
   return (ws.length>1?ws[0][0]+ws[1][0]:ws[0].slice(0,2)).toUpperCase();
 }
+// Escudos reales de los rivales que tenemos (el resto lleva el escudo con iniciales)
+const ESCUDOS={VIV:"img/rivales/vividores.png"};
 function badge(k){
   if(k===US)return '<span class="bdg us"><img src="img/escudo-64.png" alt=""></span>';
+  if(ESCUDOS[k])return `<span class="bdg us"><img src="${ESCUDOS[k]}" alt=""></span>`;
   const i=Object.keys(T).filter(x=>x!==US).indexOf(k);
   return `<span class="bdg" style="--c:${BCOL[(i<0?0:i)%BCOL.length]}" aria-hidden="true">${esc(initials(T[k]||k))}</span>`;
 }
