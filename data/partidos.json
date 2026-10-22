@@ -199,8 +199,8 @@
    "time": "21:00",
    "h": "SLC",
    "a": "VIV",
-   "hg": null,
-   "ag": null,
+   "hg": 10,
+   "ag": 3,
    "post": false
   },
   {
