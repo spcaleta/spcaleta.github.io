@@ -170,6 +170,29 @@ input,select{font:inherit;background:var(--panel2);color:var(--text);border:1px 
 .foot{border-top:1px solid var(--line);color:var(--muted);font-size:14px}
 .foot .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;padding-block:20px}
 .foot a{color:var(--yellow);font-weight:600}
+/* Gestión económica (zona privada) */
+.subnav{margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-bottom:24px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:4px;min-width:0}
+.kpi .v{font-family:var(--f-display);font-weight:900;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .v.y{color:var(--yellow)}.kpi .v.ok{color:var(--win)}.kpi .v.ko{color:var(--loss)}
+.kpi .s{color:var(--muted);font-size:13px}
+.ledger{width:100%;min-width:0;border-collapse:collapse}
+.ledger td{text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)}
+.ledger td.amt{text-align:right;font-family:var(--f-display);font-weight:800;font-size:19px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ledger td.amt.in{color:var(--win)}.ledger td.amt.out{color:var(--loss)}
+.ledger tr.tot td{border-bottom:0;border-top:2px solid var(--yellow-dim);font-weight:700}
+.ledger tr.tot td.amt{color:var(--yellow);font-size:22px}
+.ledger .src{display:block;color:var(--muted);font-size:12px}
+.prow{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow .nm{font-weight:600;overflow-wrap:anywhere}
+.prow .ix{font-family:var(--f-display);font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.paychk{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:3px;padding:6px 10px;color:var(--loss);user-select:none}
+.paychk input{accent-color:var(--win);width:20px;height:20px;margin:0}
+.paychk.paid{color:var(--win);border-color:var(--win);background:rgba(95,211,141,.08)}
+.bar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;background:var(--win)}
 @media (prefers-reduced-motion:no-preference){.tab{animation:in .25s ease}}
 @keyframes in{from{transform:translateY(4px)}to{transform:none}}
 </style>
@@ -209,7 +232,7 @@ const fmt=(iso,o={weekday:"short",day:"numeric",month:"short"})=>new Date(iso+"T
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
 const BREAKS=()=>BREAK_R.map(b=>({after:STARTS.filter(s=>s<=b.from).length,t:`${fmt(b.from,{day:"numeric",month:"short"})} – ${fmt(b.to,{day:"numeric",month:"short"})} · ${b.t}`}));
-let authed=false, filterOurs=false, adminJ=null, saving=false, loginErr="";
+let authed=false, filterOurs=false, adminJ=null, saving=false, loginErr="", adminView="partidos";
 let token=null;try{token=localStorage.getItem("slc-token")}catch(e){}
 const hdr=(x={})=>Object.assign({Authorization:"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28"},x);
 const b64=s=>{let bin="";new TextEncoder().encode(s).forEach(c=>bin+=String.fromCharCode(c));return btoa(bin)};
@@ -229,6 +252,52 @@ async function saveData(msg){
   const cur=await g.json();
   const r=await fetch(API+"/contents/"+DPATH,{method:"PUT",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({message:msg,content:b64(JSON.stringify(DATA,null,1)+"\n"),sha:cur.sha})});
   if(!r.ok){let m=r.status;try{m=(await r.json()).message}catch(e){}throw new Error("GitHub rechazó el guardado: "+m)}
+}
+
+// ---------- Gestión económica: data/economia.json, solo se lee y se escribe con la clave ----------
+const EPATH="data/economia.json";
+let ECO=null,ecoSha=null,ecoErr="",ecoBusy=false;
+const eur=n=>n.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const r2=n=>Math.round(n*100)/100;
+async function loadEco(){
+  ecoErr="";
+  const r=await fetch(API+"/contents/"+EPATH,{headers:hdr(),cache:"no-store"});
+  if(!r.ok){ECO=null;ecoErr=r.status===404?"Todavía no existe data/economia.json en el repositorio.":"No se pudo leer la economía ("+r.status+").";return}
+  const j=await r.json();ecoSha=j.sha;
+  const bin=atob(j.content.replace(/\n/g,""));ECO=JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))));
+}
+async function saveEco(msg){
+  const r=await fetch(API+"/contents/"+EPATH,{method:"PUT",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({message:msg,content:b64(JSON.stringify(ECO,null,1)+"\n"),sha:ecoSha})});
+  if(!r.ok){let m=r.status;try{m=(await r.json()).message}catch(e){}throw new Error("GitHub rechazó el guardado: "+m)}
+  ecoSha=(await r.json()).content.sha;
+}
+function renderEco(){
+  if(!ECO)return `<p class="note">${esc(ecoErr||"Cargando la economía…")}</p>`;
+  const js=ECO.jugadores,n=js.length,cuota=r2(ECO.arbitros/n),pagados=js.filter(j=>j.arbitros).length;
+  const cobrado=r2(pagados*cuota),pendiente=r2(ECO.arbitros-cobrado),caja=r2(ECO.premio-ECO.inscripcion-ECO.fianza);
+  return `<div class="kpis">
+    <div class="kpi"><span class="label">Queda en caja</span><span class="v y">${eur(caja)}</span><span class="s">Premio ${eur(ECO.premio)} − inscripción y fianza</span></div>
+    <div class="kpi"><span class="label">Árbitros cobrados</span><span class="v ok">${eur(cobrado)}</span><span class="s">${pagados} de ${n} jugadores han pagado</span></div>
+    <div class="kpi"><span class="label">Árbitros pendiente</span><span class="v ${pendiente>0?"ko":"ok"}">${eur(pendiente)}</span><span class="s">${n-pagados} por pagar · ${eur(cuota)} cada uno</span></div>
+  </div>
+  <div class="grid2" style="margin-top:0">
+    <section class="box"><div class="jhead"><h3>Caja del equipo</h3><span class="label">Movimientos</span></div>
+      <table class="ledger"><tbody>
+        <tr><td>Premio ganado<span class="src">Entrada en caja</span></td><td class="amt in">+${eur(ECO.premio)}</td></tr>
+        <tr><td>Inscripción en la liga<span class="src">Pagado con la caja</span></td><td class="amt out">−${eur(ECO.inscripcion)}</td></tr>
+        <tr><td>Fianza<span class="src">Pagado con la caja · se devuelve al acabar la liga</span></td><td class="amt out">−${eur(ECO.fianza)}</td></tr>
+        <tr class="tot"><td>Queda en caja</td><td class="amt">${eur(caja)}</td></tr>
+      </tbody></table>
+      <p class="note" style="margin-top:14px">Inscripción y fianza suman ${eur(r2(ECO.inscripcion+ECO.fianza))}.</p>
+    </section>
+    <section class="box"><div class="jhead"><h3>Pago de árbitros</h3><span class="label">${eur(ECO.arbitros)} ÷ ${n} = ${eur(cuota)}</span></div>
+      <p class="note">Los ${eur(ECO.arbitros)} de los árbitros los has adelantado tú. Marca a cada jugador cuando te devuelva su parte.</p>
+      <div class="bar" role="img" aria-label="${pagados} de ${n} pagados"><i style="width:${(pagados/n*100).toFixed(1)}%"></i></div>
+      <div>${js.map((j,i)=>`<div class="prow"><span class="ix">${i+1}</span><span class="nm">${esc(j.nombre)}</span>
+        <label class="paychk${j.arbitros?" paid":""}" for="pg-${i}"><input type="checkbox" id="pg-${i}" data-pago="${i}" ${j.arbitros?"checked":""} ${ecoBusy?"disabled":""}> ${j.arbitros?"Pagado":"Pendiente"}</label></div>`).join("")}</div>
+      <p class="note" style="margin-top:12px">${ecoBusy?"Guardando…":"Cada marca se guarda en el repositorio al momento."}</p>
+    </section>
+  </div>`;
 }
 
 function row(m){
@@ -358,12 +427,15 @@ function renderAdmin(){
     <label class="label" for="pw">Clave de acceso (token de GitHub)</label><input type="password" id="pw" autocomplete="current-password" value="${esc(token||"")}">
     <label class="chk" style="font-size:14px"><input type="checkbox" id="remember" checked> Recordar en este dispositivo</label>
     <button class="btn" ${saving?"disabled":""}>${saving?"Comprobando…":"Entrar"}</button><div class="err" ${loginErr?"":"hidden"}>${esc(loginErr)}</div></form></div>`;
+  const sub=`<div class="toolbar subnav"><h2 style="margin:0;margin-right:auto">Zona privada</h2>
+    <div class="seg" role="group" aria-label="Sección"><button data-aview="partidos" aria-pressed="${adminView==="partidos"}">Partidos</button><button data-aview="eco" aria-pressed="${adminView==="eco"}">Gestión económica</button></div>
+    <button class="btn ghost" id="logout">Salir</button></div>`;
+  if(adminView==="eco")return `<div class="tab">${sub}${renderEco()}</div>`;
   const all=M();
   if(adminJ===null){const p=all.find(m=>!played(m)&&!m.post);adminJ=p?p.j:22}
   const ms=all.filter(m=>m.j===adminJ);
-  return `<div class="tab"><div class="toolbar"><h2 style="margin:0;margin-right:auto">Editar partidos</h2>
-    <select id="selJ" aria-label="Jornada">${STARTS.map((_,i)=>`<option value="${i+1}" ${i+1===adminJ?"selected":""}>Jornada ${i+1}</option>`).join("")}</select>
-    <button class="btn ghost" id="logout">Salir</button></div>
+  return `<div class="tab">${sub}<div class="toolbar"><h3 style="margin:0;margin-right:auto">Editar partidos</h3>
+    <select id="selJ" aria-label="Jornada">${STARTS.map((_,i)=>`<option value="${i+1}" ${i+1===adminJ?"selected":""}>Jornada ${i+1}</option>`).join("")}</select></div>
   <form class="box" id="edit">${ms.map(m=>`<div class="arow"><div class="teams">${esc(T[m.h])} <span class="label">vs</span> ${esc(T[m.a])}</div>
     <div class="fields"><input type="date" id="d-${m.id}" value="${m.date}" aria-label="Fecha"><input type="time" id="t-${m.id}" value="${m.time}" aria-label="Hora">
     <input type="number" min="0" id="h-${m.id}" value="${m.hg??""}" placeholder="–" aria-label="Goles local"><input type="number" min="0" id="a-${m.id}" value="${m.ag??""}" placeholder="–" aria-label="Goles visitante">
@@ -383,14 +455,22 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("[data-tab],[data-go]");
   if(b){tab=b.dataset.tab||b.dataset.go;render();window.scrollTo(0,0);return}
   const v=e.target.closest("[data-view]");if(v){calView=v.dataset.view;render();return}
+  const av=e.target.closest("[data-aview]");if(av){adminView=av.dataset.aview;render();if(adminView==="eco")loadEco().catch(err=>{ecoErr=err.message}).then(render);return}
   const mn=e.target.closest("[data-mon]");if(mn&&!mn.disabled){calMonth=MONTHS[MONTHS.indexOf(calMonth)+ +mn.dataset.mon];selDay=null;render();return}
   const dy=e.target.closest("[data-day]");if(dy){selDay=dy.dataset.day;render();return}
-  if(e.target.id==="logout"){authed=false;token=null;try{localStorage.removeItem("slc-token")}catch(_){}render()}
+  if(e.target.id==="logout"){authed=false;ECO=null;token=null;try{localStorage.removeItem("slc-token")}catch(_){}render()}
 });
 document.addEventListener("change",e=>{
   if(e.target.id==="fOurs"){filterOurs=e.target.checked;selDay=null;render()}
   if(e.target.id==="selJ"){adminJ=+e.target.value;render()}
+  if(e.target.dataset&&e.target.dataset.pago!==undefined&&ECO&&!ecoBusy)marcaPago(+e.target.dataset.pago,e.target.checked);
 });
+async function marcaPago(i,valor){
+  const j=ECO.jugadores[i];j.arbitros=valor;ecoBusy=true;render();
+  try{await saveEco(`Árbitros: ${j.nombre} ${valor?"ha pagado":"pendiente"}`);toast(`${j.nombre}: ${valor?"pagado":"pendiente"}`)}
+  catch(err){j.arbitros=!valor;toast(err.message);try{await loadEco()}catch(_){}}
+  ecoBusy=false;render();
+}
 document.addEventListener("submit",async e=>{
   e.preventDefault();
   if(saving)return;

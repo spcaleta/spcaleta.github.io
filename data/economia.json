@@ -1,0 +1,60 @@
+{
+ "premio": 200,
+ "inscripcion": 69.7,
+ "fianza": 60.5,
+ "arbitros": 143,
+ "jugadores": [
+  {
+   "nombre": "Onio",
+   "arbitros": false
+  },
+  {
+   "nombre": "Martin",
+   "arbitros": false
+  },
+  {
+   "nombre": "Juan",
+   "arbitros": false
+  },
+  {
+   "nombre": "Santi",
+   "arbitros": false
+  },
+  {
+   "nombre": "Gerva",
+   "arbitros": false
+  },
+  {
+   "nombre": "Tarek",
+   "arbitros": false
+  },
+  {
+   "nombre": "Josemi",
+   "arbitros": false
+  },
+  {
+   "nombre": "Chemi",
+   "arbitros": false
+  },
+  {
+   "nombre": "Cristian",
+   "arbitros": false
+  },
+  {
+   "nombre": "Ivan",
+   "arbitros": false
+  },
+  {
+   "nombre": "Raul",
+   "arbitros": false
+  },
+  {
+   "nombre": "Marcos",
+   "arbitros": false
+  },
+  {
+   "nombre": "Carlos",
+   "arbitros": false
+  }
+ ]
+}
