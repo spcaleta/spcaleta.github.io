@@ -157,7 +157,7 @@
    "a": "QUI",
    "hg": null,
    "ag": null,
-   "post": false
+   "post": true
   },
   {
    "id": "j1-1",
@@ -168,7 +168,7 @@
    "a": "MAS",
    "hg": null,
    "ag": null,
-   "post": false
+   "post": true
   },
   {
    "id": "j1-2",
