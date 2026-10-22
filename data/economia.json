@@ -7,7 +7,7 @@
  "jugadores": [
   {
    "nombre": "Onio",
-   "arbitros": false
+   "arbitros": true
   },
   {
    "nombre": "Martin",
