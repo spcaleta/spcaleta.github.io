@@ -3,6 +3,7 @@
  "inscripcion": 69.7,
  "fianza": 60.5,
  "arbitros": 143,
+ "pagadorArbitros": "Josemi",
  "jugadores": [
   {
    "nombre": "Onio",
@@ -30,7 +31,7 @@
   },
   {
    "nombre": "Josemi",
-   "arbitros": false
+   "arbitros": true
   },
   {
    "nombre": "Chemi",

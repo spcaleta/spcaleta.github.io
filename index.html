@@ -191,6 +191,7 @@ input,select{font:inherit;background:var(--panel2);color:var(--text);border:1px 
 .paychk{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:3px;padding:6px 10px;color:var(--loss);user-select:none}
 .paychk input{accent-color:var(--win);width:20px;height:20px;margin:0}
 .paychk.paid{color:var(--win);border-color:var(--win);background:rgba(95,211,141,.08)}
+.payer{font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:8px 10px;background:var(--yellow);color:var(--ink)}
 .bar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin:6px 0 14px}
 .bar i{display:block;height:100%;background:var(--win)}
 @media (prefers-reduced-motion:no-preference){.tab{animation:in .25s ease}}
@@ -273,12 +274,12 @@ async function saveEco(msg){
 }
 function renderEco(){
   if(!ECO)return `<p class="note">${esc(ecoErr||"Cargando la economía…")}</p>`;
-  const js=ECO.jugadores,n=js.length,cuota=r2(ECO.arbitros/n),pagados=js.filter(j=>j.arbitros).length;
+  const js=ECO.jugadores,n=js.length,cuota=r2(ECO.arbitros/n),pagador=ECO.pagadorArbitros||"",pagados=js.filter(j=>j.arbitros||j.nombre===pagador).length;
   const cobrado=r2(pagados*cuota),pendiente=r2(ECO.arbitros-cobrado),caja=r2(ECO.premio-ECO.inscripcion-ECO.fianza);
   return `<div class="kpis">
     <div class="kpi"><span class="label">Queda en caja</span><span class="v y">${eur(caja)}</span><span class="s">Premio ${eur(ECO.premio)} − inscripción y fianza</span></div>
-    <div class="kpi"><span class="label">Árbitros cobrados</span><span class="v ok">${eur(cobrado)}</span><span class="s">${pagados} de ${n} jugadores han pagado</span></div>
-    <div class="kpi"><span class="label">Árbitros pendiente</span><span class="v ${pendiente>0?"ko":"ok"}">${eur(pendiente)}</span><span class="s">${n-pagados} por pagar · ${eur(cuota)} cada uno</span></div>
+    <div class="kpi"><span class="label">Árbitros cobrados</span><span class="v ok">${eur(cobrado)}</span><span class="s">${pagados} de ${n} jugadores${pagador?` (contando a ${esc(pagador)})`:""}</span></div>
+    <div class="kpi"><span class="label">Árbitros pendiente</span><span class="v ${pendiente>0?"ko":"ok"}">${eur(pendiente)}</span><span class="s">${n-pagados} por pagar · ${eur(cuota)} cada uno${pagador?` a ${esc(pagador)}`:""}</span></div>
   </div>
   <div class="grid2" style="margin-top:0">
     <section class="box"><div class="jhead"><h3>Caja del equipo</h3><span class="label">Movimientos</span></div>
@@ -291,9 +292,9 @@ function renderEco(){
       <p class="note" style="margin-top:14px">Inscripción y fianza suman ${eur(r2(ECO.inscripcion+ECO.fianza))}.</p>
     </section>
     <section class="box"><div class="jhead"><h3>Pago de árbitros</h3><span class="label">${eur(ECO.arbitros)} ÷ ${n} = ${eur(cuota)}</span></div>
-      <p class="note">Los ${eur(ECO.arbitros)} de los árbitros los has adelantado tú. Marca a cada jugador cuando te devuelva su parte.</p>
+      <p class="note">${pagador?`Los ${eur(ECO.arbitros)} de los árbitros los ha adelantado <b>${esc(pagador)}</b>. Cada uno de los demás le debe ${eur(cuota)}: márcalo cuando se lo devuelva.`:`Marca a cada jugador cuando pague su parte de ${eur(cuota)}.`}</p>
       <div class="bar" role="img" aria-label="${pagados} de ${n} pagados"><i style="width:${(pagados/n*100).toFixed(1)}%"></i></div>
-      <div>${js.map((j,i)=>`<div class="prow"><span class="ix">${i+1}</span><span class="nm">${esc(j.nombre)}</span>
+      <div>${js.map((j,i)=>j.nombre===pagador?`<div class="prow"><span class="ix">${i+1}</span><span class="nm">${esc(j.nombre)}</span><span class="payer">Adelantó ${eur(ECO.arbitros)}</span></div>`:`<div class="prow"><span class="ix">${i+1}</span><span class="nm">${esc(j.nombre)}</span>
         <label class="paychk${j.arbitros?" paid":""}" for="pg-${i}"><input type="checkbox" id="pg-${i}" data-pago="${i}" ${j.arbitros?"checked":""} ${ecoBusy?"disabled":""}> ${j.arbitros?"Pagado":"Pendiente"}</label></div>`).join("")}</div>
       <p class="note" style="margin-top:12px">${ecoBusy?"Guardando…":"Cada marca se guarda en el repositorio al momento."}</p>
     </section>
