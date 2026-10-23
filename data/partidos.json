@@ -210,8 +210,8 @@
    "time": "22:00",
    "h": "BOM",
    "a": "DIS",
-   "hg": null,
-   "ag": null,
+   "hg": 3,
+   "ag": 2,
    "post": false
   },
   {
