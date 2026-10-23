@@ -177,8 +177,8 @@
    "time": "20:30",
    "h": "SIT",
    "a": "HAR",
-   "hg": null,
-   "ag": null,
+   "hg": 1,
+   "ag": 0,
    "post": false
   },
   {
@@ -188,8 +188,8 @@
    "time": "21:30",
    "h": "GAL",
    "a": "NAS",
-   "hg": null,
-   "ag": null,
+   "hg": 2,
+   "ag": 4,
    "post": false
   },
   {
