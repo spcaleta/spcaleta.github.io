@@ -127,6 +127,11 @@ h2.sec::before{content:"";display:inline-block;width:7px;height:.78em;background
 .mc-ln{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px}
 .mc-t{display:grid;justify-items:center;gap:6px;text-align:center;min-width:0;font-weight:700;font-size:14px;line-height:1.15}
 .mc-t .bdg{font-size:30px}
+/* Camiseta de cada equipo en los enfrentamientos */
+.kit{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.kit svg{width:16px;height:16px;flex:none}
+.md-team .kit{font-size:12px}.md-team .kit svg{width:20px;height:20px}
+.mrow .kit{margin-left:4px;vertical-align:-3px}
 .mc-t.us{color:var(--yellow)}
 .mc-sc{font-family:var(--f-display);font-weight:900;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .mc-sc.t{font-size:24px;color:var(--text)}
@@ -322,6 +327,26 @@ function initials(name){
 }
 // Escudos reales de los rivales que tenemos (el resto lleva el escudo con iniciales)
 const ESCUDOS={VIV:"img/rivales/vividores.png"};
+// Color de la camiseta de cada equipo (colores: uno liso o varios en rayas; Mashuca tiene dos equipaciones)
+const CAMISETAS={
+  DIS:[{t:"Verde claro",c:["#8fd16a"]}], SIT:[{t:"Negra",c:["#111"]}], ROY:[{t:"Verde",c:["#1f9a4a"]}],
+  NAS:[{t:"Morado claro",c:["#b58ce0"]}], BOM:[{t:"Negra",c:["#111"]}], VIV:[{t:"Negra",c:["#111"]}],
+  GAL:[{t:"Blanca",c:["#f4f4f4"]}], CRA:[{t:"Naranja",c:["#f28c28"]}], QUI:[{t:"Azul",c:["#2a6fdb"]}],
+  HAR:[{t:"Roja y negra",c:["#d4232b","#111"]}], MAS:[{t:"1ª verde",c:["#1f9a4a"]},{t:"2ª morada",c:["#7b3fb0"]}],
+  SLC:[{t:"Negra",c:["#111"]}]
+};
+let kitN=0;
+function shirt(c){
+  const id="k"+(++kitN),n=c.length;
+  const fill=n>1?`url(#${id})`:c[0];
+  const grad=n>1?`<defs><linearGradient id="${id}" x2="1">${[0,1,2,3,4,5].map(i=>`<stop offset="${i/6}" stop-color="${c[i%n]}"/><stop offset="${(i+1)/6}" stop-color="${c[i%n]}"/>`).join("")}</linearGradient></defs>`:"";
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${grad}<path d="M8 3 3.5 5.5 1.5 10l3.5 1.6L6 10v11h12V10l1 1.6 3.5-1.6-2-4.5L16 3c-.6 1.5-2.1 2.4-4 2.4S8.6 4.5 8 3Z" fill="${fill}" stroke="#a39e85" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
+}
+function camiseta(k,soloIcono){
+  const ks=CAMISETAS[k];if(!ks)return "";
+  const txt=ks.map(x=>x.t).join(" · ");
+  return `<span class="kit" title="Camiseta: ${esc(txt)}">${ks.map(x=>shirt(x.c)).join("")}${soloIcono?"":esc(txt)}</span>`;
+}
 function badge(k){
   if(k===US)return '<span class="bdg us"><img src="img/escudo-64.png" alt=""></span>';
   if(ESCUDOS[k])return `<span class="bdg us"><img src="${ESCUDOS[k]}" alt=""></span>`;
@@ -444,8 +469,8 @@ function row(m){
   const sc=m.post?`<div class="score pend"><span class="tag">Aplaz.</span></div>`:played(m)?`<div class="score">${m.hg}–${m.ag}</div>`:`<div class="score pend">${m.time}</div>`;
   return `<div class="mrow${ours?" ours":""}">
     <div class="when"><b>${fmt(m.date)}</b>${m.time} h</div>
-    <div class="h${m.h===US?" ours-name":""}" title="${esc(T[m.h])}">${tm(m.h,SHORT[m.h])}</div>${sc}
-    <div class="a${m.a===US?" ours-name":""}" title="${esc(T[m.a])}">${tm(m.a,SHORT[m.a])}</div></div>`;
+    <div class="h${m.h===US?" ours-name":""}" title="${esc(T[m.h])}">${tm(m.h,SHORT[m.h])}${camiseta(m.h,1)}</div>${sc}
+    <div class="a${m.a===US?" ours-name":""}" title="${esc(T[m.a])}">${tm(m.a,SHORT[m.a])}${camiseta(m.a,1)}</div></div>`;
 }
 function table(){
   const S={};Object.keys(T).forEach(k=>S[k]={k,pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0,form:[]});
@@ -474,7 +499,7 @@ function stats(){
   return {pos,me,racha:me.form.slice(-5)};
 }
 function card(m){
-  const us=m.h===US?"h":"a",side=k=>`<div class="mc-t${k===US?" us":""}" title="${esc(T[k])}">${badge(k)}<span>${esc(SHORT[k]||T[k])}</span></div>`;
+  const us=m.h===US?"h":"a",side=k=>`<div class="mc-t${k===US?" us":""}" title="${esc(T[k])}">${badge(k)}<span>${esc(SHORT[k]||T[k])}</span>${camiseta(k)}</div>`;
   let cls="next",mid=`<span class="mc-sc t">${m.time}</span>`,pill=`<span class="res N">${m.post?"Aplazado":m.h===US?"En casa":"Fuera"}</span>`;
   if(played(m)){
     const a=us==="h"?+m.hg:+m.ag,b=us==="h"?+m.ag:+m.hg;cls=a>b?"W":a<b?"L":"D";
@@ -489,7 +514,7 @@ function renderInicio(){
   const done=ours.filter(played);
   let nx="";
   if(next){
-    const side=k=>`<div class="md-team${k===US?" us":""}">${badge(k)}<b>${esc(T[k])}</b><small>${k===next.h?"Local":"Visitante"}</small></div>`;
+    const side=k=>`<div class="md-team${k===US?" us":""}">${badge(k)}<b>${esc(T[k])}</b>${camiseta(k)}<small>${k===next.h?"Local":"Visitante"}</small></div>`;
     nx=`<section class="matchday" aria-label="Próximo partido"><div class="md-top"><span class="label">Próximo partido</span><span class="label">Jornada ${next.j} · 3ª División</span></div>
       <div class="md-teams">${side(next.h)}<div class="md-mid"><span class="md-date">${fmt(next.date,{weekday:"short",day:"numeric",month:"short"})}</span><span class="md-time">${next.time}</span><span class="md-vs">VS</span></div>${side(next.a)}</div>
       <div class="md-count" id="cd">${cuentaAtras(next)}</div></section>`;
