@@ -265,8 +265,8 @@
    "time": "21:00",
    "h": "DIS",
    "a": "SLC",
-   "hg": null,
-   "ag": null,
+   "hg": 4,
+   "ag": 4,
    "post": false
   },
   {
