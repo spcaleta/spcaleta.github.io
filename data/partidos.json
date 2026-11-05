@@ -243,8 +243,8 @@
    "time": "20:30",
    "h": "GAL",
    "a": "CRA",
-   "hg": null,
-   "ag": null,
+   "hg": 4,
+   "ag": 3,
    "post": false
   },
   {
@@ -276,8 +276,8 @@
    "time": "22:00",
    "h": "QUI",
    "a": "SIT",
-   "hg": null,
-   "ag": null,
+   "hg": 3,
+   "ag": 6,
    "post": false
   },
   {
